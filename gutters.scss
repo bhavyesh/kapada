@@ -1,0 +1,100 @@
+$root-font-size: 16;
+
+
+$base-viewport-name: z;
+$main-viewport-names: a b c d e f g h i j k l m n o p q r s t u v w x y;
+//$main-viewport-names: es vs xs s m l xl vl el j xj vj ej;
+$main-viewport-start-point: 300; //px
+$main-viewport-end-point: 1500; //px
+$main-viewport-sections: 8; // number of viewport definitions
+$main-viewport-gap-px: floor(($main-viewport-end-point - $main-viewport-start-point) / $main-viewport-sections);
+$main-viewport-gap-px: 160; // overwrite to the above value
+
+
+$media-query-unit: em; // px | em
+@if      $media-query-unit == 'px' { $media-query-unit: $root-font-size * 1px}
+@else if $media-query-unit == 'em' { $media-query-unit: 1em}
+
+
+$main-viewport-map: ();
+@each $current-viewport-name in $main-viewport-names {
+  $i: index($main-viewport-names, $current-viewport-name);
+  $new: ($current-viewport-name: ($i * $main-viewport-gap-px));
+  $main-viewport-map: map-merge($main-viewport-map, $new);
+}
+// ---------------------- Here You can give custom MAP for viewports
+//$grid-viewport-map: (a:160, b:320, c:480, d:640, e:800, f:960, g:1120, h:1280, i:1440, j:1600);
+
+
+$gutter-IMP: false;
+
+$gutter-sizes: 0 2 4 8 16 24 32 48; //px
+
+$gutter-map: (z:0, es:2, vs:4, xs:8, s:12, m:16, l:24, xl:32, vl:48, el:64 ); //px
+
+$gutter-naming: value; // value | names
+
+$gutter-unit: rem; // px | em | rem
+@if      $gutter-unit == px { $gutter-unit: 1px}
+@else if $gutter-unit == em { $gutter-unit: 0.0625em}
+@else if $gutter-unit == rem { $gutter-unit: 0.0625rem}
+
+@function padding-naming ($gutter-name, $gutter-size) {
+  @return if( $gutter-naming == names, -$gutter-name, $gutter-size);
+}
+
+@mixin generate-gutters($viewport-name, $gutter-type, $gutter-map, $type, $gutter-IMP){
+  
+  @if $viewport-name == z { $viewport-name: unquote(''); }
+  @else { $viewport-name: $viewport-name + '-'}
+  
+  $gutter-class-name: str-slice($gutter-type, 1, 1);
+  
+  @each $gutter-name, $gutter-size in $gutter-map {
+
+    @if (index($type, a) != null) or ($type == all) {
+      .#{$viewport-name}#{$gutter-class-name}a#{padding-naming($gutter-name, $gutter-size)} {
+        #{$gutter-type}: $gutter-size * $gutter-unit $gutter-IMP }}
+
+    @if (index($type, x) != null) or ($type == all) {
+      .#{$viewport-name}#{$gutter-class-name}x#{padding-naming($gutter-name, $gutter-size)} {
+        #{$gutter-type}-left: $gutter-size * $gutter-unit $gutter-IMP; #{$gutter-type}-right: $gutter-size * $gutter-unit $gutter-IMP} }
+
+    @if (index($type, y) != null) or ($type == all) {
+      .#{$viewport-name}#{$gutter-class-name}y#{padding-naming($gutter-name, $gutter-size)} {
+        #{$gutter-type}-top: $gutter-size * $gutter-unit $gutter-IMP; #{$gutter-type}-bottom: $gutter-size * $gutter-unit $gutter-IMP} }
+
+    @if (index($type, t) != null) or ($type == all) {
+      .#{$viewport-name}#{$gutter-class-name}t#{padding-naming($gutter-name, $gutter-size)} {
+        #{$gutter-type}-top: $gutter-size * $gutter-unit $gutter-IMP;} }
+
+    @if (index($type, r) != null) or ($type == all) {
+      .#{$viewport-name}#{$gutter-class-name}r#{padding-naming($gutter-name, $gutter-size)} {
+        #{$gutter-type}-right: $gutter-size * $gutter-unit $gutter-IMP;} }
+
+    @if (index($type, b) != null) or ($type == all) {
+      .#{$viewport-name}#{$gutter-class-name}b#{padding-naming($gutter-name, $gutter-size)} {
+        #{$gutter-type}-bottom: $gutter-size * $gutter-unit $gutter-IMP;} }
+
+    @if (index($type, l) != null) or ($type == all) {
+      .#{$viewport-name}#{$gutter-class-name}l#{padding-naming($gutter-name, $gutter-size)} {
+        #{$gutter-type}-left: $gutter-size * $gutter-unit $gutter-IMP;}}
+  }
+}
+
+@mixin gutters($gutter-type, $gutter-IMP){
+  
+  @if $gutter-IMP == true{$gutter-IMP: unquote('!important')} @else { $gutter-IMP: unquote('') }
+  
+  @include generate-gutters(z, $gutter-type, $gutter-map, all, $gutter-IMP);
+  @each $main-viewport-name, $main-viewport-width in $main-viewport-map {
+    @if $main-viewport-width >= $main-viewport-start-point and $main-viewport-width <= $main-viewport-end-point {
+      @media (min-width: ($main-viewport-width/ $root-font-size) * $media-query-unit) {
+        @include generate-gutters($main-viewport-name, $gutter-type, $gutter-map, x y, $gutter-IMP);
+      }
+    }
+  }
+}
+
+@include gutters(margin, true);  // ( margin | padding, $gutter-IMP | true | false )
+@include gutters(padding, false);  // ( margin | padding, $gutter-IMP | true | false )
