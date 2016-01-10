@@ -1,0 +1,91 @@
+$root-font-size: 16;
+
+$base-viewport-name: z;
+$main-viewport-names: a b c d e f g h i j k l m n o p q r s t u v w x y;
+$main-viewport-start-point: 300; //px
+$main-viewport-end-point: 1500; //px
+$main-viewport-sections: 8; // number of viewport definitions
+$main-viewport-gap-px: floor(($main-viewport-end-point - $main-viewport-start-point) / $main-viewport-sections);
+$main-viewport-gap-px: 160; // overwrite to the above value
+
+$main-viewport-width-unit: em; // px | em
+
+@if      $main-viewport-width-unit == 'px' { $main-viewport-width-unit: $root-font-size * 1px}
+@else if $main-viewport-width-unit == 'em' { $main-viewport-width-unit: 1em}
+
+$main-viewport-map: ();
+@each $current-viewport-name in $main-viewport-names {
+  $i: index($main-viewport-names, $current-viewport-name);
+  $new: ($current-viewport-name: ($i * $main-viewport-gap-px));
+  $main-viewport-map: map-merge($main-viewport-map, $new);
+}
+// ---------------------- Here You can give custom MAP for viewports
+//$grid-viewport-map: (a:160, b:320, c:480, d:640, e:800, f:960, g:1120, h:1280, i:1440, j:1600);
+
+$padding-IMP: false; // true | false
+@if $padding-IMP == true{$padding-IMP: unquote('!important')} @else { $padding-IMP: unquote('') }
+
+$padding-sizes: 0 2 4 8 16 24 32 48; //px
+
+$padding-map: (z:0, es:2, vs:4, xs:8, s:12, m:16, l:24, xl:32, vl:48, el:64 ); //px
+
+$padding-naming: value; // value | names
+
+$padding-unit: rem; // px | em | rem
+@if      $padding-unit == px { $padding-unit: 1px}
+@else if $padding-unit == em { $padding-unit: 0.0625em}
+@else if $padding-unit == rem { $padding-unit: 0.0625rem}
+
+@function padding-naming ($padding-name, $padding-size) {
+  @return if( $padding-naming == names, -$padding-name, $padding-size);
+}
+
+@mixin generate-paddings($viewport-name, $padding-map, $type){
+  
+  @if $viewport-name == z { $viewport-name: unquote(''); }
+  @else { $viewport-name: $viewport-name + '-'}
+  
+  @each $padding-name, $padding-size in $padding-map {
+
+    @if (index($type, a) != null) or ($type == all) {
+      .#{$viewport-name}pa#{padding-naming($padding-name, $padding-size)} {
+        padding: $padding-size * $padding-unit $padding-IMP }}
+
+    @if (index($type, x) != null) or ($type == all) {
+      .#{$viewport-name}px#{padding-naming($padding-name, $padding-size)} {
+        padding-left: $padding-size * $padding-unit $padding-IMP; padding-right: $padding-size * $padding-unit $padding-IMP} }
+
+    @if (index($type, y) != null) or ($type == all) {
+      .#{$viewport-name}py#{padding-naming($padding-name, $padding-size)} {
+        padding-top: $padding-size * $padding-unit $padding-IMP; padding-bottom: $padding-size * $padding-unit $padding-IMP} }
+
+    @if (index($type, t) != null) or ($type == all) {
+      .#{$viewport-name}pt#{padding-naming($padding-name, $padding-size)} {
+        padding-top: $padding-size * $padding-unit $padding-IMP;} }
+
+    @if (index($type, r) != null) or ($type == all) {
+      .#{$viewport-name}pr#{padding-naming($padding-name, $padding-size)} {
+        padding-right: $padding-size * $padding-unit $padding-IMP;} }
+
+    @if (index($type, b) != null) or ($type == all) {
+      .#{$viewport-name}pb#{padding-naming($padding-name, $padding-size)} {
+        padding-bottom: $padding-size * $padding-unit $padding-IMP;} }
+
+    @if (index($type, l) != null) or ($type == all) {
+      .#{$viewport-name}pl#{padding-naming($padding-name, $padding-size)} {
+        padding-left: $padding-size * $padding-unit $padding-IMP;}}
+  }
+}
+
+@mixin paddings{
+  @include generate-paddings(z, $padding-map, x);
+  @each $main-viewport-name, $main-viewport-width in $main-viewport-map {
+    @if $main-viewport-width >= $main-viewport-start-point and $main-viewport-width <= $main-viewport-end-point {
+      @media (min-width: ($main-viewport-width/ $root-font-size) * $main-viewport-width-unit) {
+        @include generate-paddings($main-viewport-name, $padding-map, x);
+      }
+    }
+  }
+}
+
+@include paddings
