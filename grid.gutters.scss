@@ -1,0 +1,134 @@
+@function isImp ($imp) {  @return if( $imp == true, unquote('!important'), unquote('')); }
+@function unit ($unit) {  @return if( $unit == em, 0.0625em,   if( $unit == rem, 0.0625rem,    if( $unit == px, 1px, 1error ))); }
+
+@function bp-map ($bp-names, $bp-begin, $bp-end, $bp-gap, $unit) {
+  $return-bp-map: ();
+  @each $current-bp-name in $bp-names {
+    $i: index($bp-names, $current-bp-name);
+    $bp-width: $i * $bp-gap;
+    @if $bp-width >= $bp-begin and $bp-width <= $bp-end {
+      $new: ($current-bp-name: $bp-width * unit($unit));
+      $return-bp-map: map-merge($return-bp-map, $new);
+    }
+  }
+  @return $return-bp-map;
+}
+
+$root-font-size: 16;
+
+$base-bp-name: z;
+$bp-names: a b c d e f g h i j k l m n o p q r s t u v w x y; //optional names es vs xs s m l xl vl el j xj vj ej;
+$bp-begin: 300; //px
+$bp-end: 1500; //px
+$bp-gap: 124; //px
+$bp-unit: em;
+$bp-map: bp-map($bp-names, $bp-begin, $bp-end, $bp-gap, $bp-unit);
+// Cutom Overwrite of $BP-MAP: (a:160, b:320, c:480, d:640, e:800, f:960, g:1120, h:1280, i:1440, j:1600) //px
+
+$grid-columns: 20; // number of percent based grid columns
+$grid-equals: 8; // number of group equal sized columns
+$grid-naming: value; // grid-naming: value -> width percentae | index -> serial index from 1 to total grid columns
+
+$legal-directions: ( a: all,  x: left right,  y: top bottom,  t: top,  r: right, b: bottom, l: left);
+
+$base-gutter-directions: all;
+$bp-gutter-directions: x y;
+$gutter-naming: value no-hyphen;
+$gutter-unit: rem;
+$gutter-IMP: false;
+$gutter-map: (z:0, es:2, vs:4, s:8, m:16, l:24, vl:48, el:64 ); //px
+
+
+
+@mixin generate-grids($grid-columns, $grid-equals, $grid-naming, $bp-name) {
+  
+  @for $index from 0 through $grid-columns {
+    
+    @if $index == 0 {
+      .#{$bp-name}-auto {
+        width: auto;
+      }
+    }
+  
+    // stop 5% from getting inserted in stylesheet ::::: Remove this to insert 5 % box
+    @else if percentage($index / $grid-columns) == 5% {}
+  
+    // keeps class with 100% width with just the single character e.g. "a" ::::: remove this to name normally
+    @else if $index == $grid-columns {
+      .#{$bp-name}#{if($grid-naming == 'index', $index, round(($index * 100) / $grid-columns))} ,
+      .#{$bp-name} { 
+        width: 100%;
+      }
+    }
+  
+    // when index is 0 ""$grid-columns % $index == 0"" will generate error as 0 is not a legal value for division
+    @else if $grid-columns % $index == 0 {
+      .#{$bp-name}#{ if($grid-naming == 'index', $index, round(($index * 100) / $grid-columns))} ,
+      .#{$bp-name}-#{$grid-columns /$index} {
+        width: percentage($index / $grid-columns);
+      }
+    }
+
+    // rest all here
+    @else {
+      .#{$bp-name}#{if($grid-naming == 'index', $index, round(($index * 100) / $grid-columns)) } { 
+        width: percentage($index / $grid-columns);
+      }
+    }
+
+  }
+
+  @for $j from 1 through $grid-equals {
+    @if $grid-columns % $j != 0 {
+      .#{$bp-name}-#{$j} {
+        width: percentage(1 / $j);
+      }
+    }
+  }
+
+}
+
+@function gutter-classing ($g-naming, $g-name, $g-size) { @return if( index($g-naming, hyphen) != null, '-', '') + if( nth($g-naming,1) == name, $g-name, $g-size) }
+
+@mixin generate-gutters($gutter-type, $gutter-unit, $gutter-IMP, $direction, $gutter-naming, $gutter-map, $bp-name) {
+  
+  @if $bp-name == $base-bp-name { $bp-name: unquote('');
+  } @else {
+    $bp-name: $bp-name + '-'
+  }
+  
+  $gutter-class-name: str-slice($gutter-type, 1, 1);
+  
+  @each $gutter-name, $gutter-size in $gutter-map {
+    @each $ld, $d in $legal-directions {
+      @if (index($direction, $ld) != null) or ($direction == all) {
+        .#{$bp-name}#{$gutter-class-name}#{$ld}#{gutter-classing($gutter-naming, $gutter-name, $gutter-size)} {
+          @each $current-d in $d {
+            #{$gutter-type}#{if($current-d == all, '', '-' + $current-d)}:
+              $gutter-size * $gutter-unit $gutter-IMP
+          }
+        }
+      }
+    }
+  }
+  
+}
+
+@mixin generator {
+  
+  @include generate-grids($grid-columns, $grid-equals, $grid-naming, $base-bp-name);
+  @include generate-gutters( padding, unit($gutter-unit), isImp($gutter-IMP), $base-gutter-directions, $gutter-naming, $gutter-map,  $base-bp-name);
+  @include generate-gutters( margin, unit($gutter-unit), isImp($gutter-IMP), $base-gutter-directions, $gutter-naming, $gutter-map,  $base-bp-name);
+  
+  @each $bp-name, $bp-width in $bp-map {
+    @media (min-width: $bp-width) {
+      @include generate-grids($grid-columns, $grid-equals, $grid-naming, $bp-name);
+      @include generate-gutters( padding, unit($gutter-unit), isImp($gutter-IMP), $bp-gutter-directions, $gutter-naming, $gutter-map,  $base-bp-name);
+      @include generate-gutters( margin, unit($gutter-unit), isImp($gutter-IMP), $bp-gutter-directions, $gutter-naming, $gutter-map,  $base-bp-name);
+    }
+  }
+  
+}
+
+@include generator;
+
