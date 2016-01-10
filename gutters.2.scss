@@ -1,0 +1,60 @@
+@function isImp ($imp) {  @return if( $imp == true, unquote('!important'), unquote('')); }
+@function unit ($unit) {  @return if( $unit == em, 0.0625em,   if( $unit == rem, 0.0625rem,    if( $unit == px, 1px, 1error ))); }
+
+@function bp-map ($bp-names, $bp-begin, $bp-end, $bp-gap, $unit) {
+  $return-bp-map: ();
+  @each $current-bp-name in $bp-names {
+    $i: index($bp-names, $current-bp-name);
+    $bp-width: $i * $bp-gap;
+    @if $bp-width >= $bp-begin and $bp-width <= $bp-end {
+      $new: ($current-bp-name: $bp-width * unit($unit));
+      $return-bp-map: map-merge($return-bp-map, $new); } }
+  @return $return-bp-map; }
+
+$ROOT-FONT-SIZE: 16;
+
+$MAIN-BP-NAME: zzz;
+$BP-NAMES: a b c d e f g h i j k l m n o p q r s t u v w x y; //optional names es vs xs s m l xl vl el j xj vj ej;
+$BP-BEGIN: 300; //px
+$BP-END: 1500; //px
+$BP-GAP: 160; //px
+$BP-UNIT: em;
+$BP-MAP: bp-map($BP-NAMES, $BP-BEGIN, $BP-END, $BP-GAP, $BP-UNIT);
+// Cutom Overwrite of $BP-MAP: (a:160, b:320, c:480, d:640, e:800, f:960, g:1120, h:1280, i:1440, j:1600) //px
+
+$LEGAL-DIRECTIONS: ( a: all,  x: left right,  y: top bottom,  t: top,  r: right, b: bottom, l: left);
+
+
+
+$GUTTER-MAP: (z:0, es:2, vs:4, xs:8, s:12, m:16, l:24, xl:32, vl:48, el:64 ); //px
+
+@function gutter-classing ($g-naming, $g-name, $g-size) { @return if( index($g-naming, hyphen) != null, '-', '') + if( nth($g-naming,1) == name, $g-name, $g-size) }
+
+@mixin generate-gutters($gutter-type, $gutter-unit, $gutter-IMP, $direction, $gutter-naming, $gutter-map, $bp-name) {
+  @if $bp-name == $MAIN-BP-NAME { $bp-name: unquote(''); } @else { $bp-name: $bp-name + '-'}
+  $gutter-class-name: str-slice($gutter-type, 1, 1);
+  @each $gutter-name, $gutter-size in $gutter-map {
+    @each $ld, $d in $LEGAL-DIRECTIONS {
+      @if (index($direction, $ld) != null) or ($direction == all) {
+        .#{$bp-name}#{$gutter-class-name}#{$ld}#{gutter-classing($gutter-naming, $gutter-name, $gutter-size)} {
+          @each $current-d in $d {
+            #{$gutter-type}#{if($current-d == all, '', '-' + $current-d)}:
+              $gutter-size * $gutter-unit $gutter-IMP } } } } } }
+
+@mixin gutters($gutter-type, $gutter-unit, $gutter-IMP, $main-gutter-directions, $bp-gutter-directions, $gutter-naming, $gutter-map, $bp-map){  
+  @include generate-gutters($gutter-type, unit($gutter-unit), isImp($gutter-IMP), $main-gutter-directions, $gutter-naming, $gutter-map, $MAIN-BP-NAME);
+  @each $bp-name, $bp-width in $bp-map {
+    @media (min-width: $bp-width) {
+      @include generate-gutters($gutter-type, unit($gutter-unit), isImp($gutter-IMP), $bp-gutter-directions, $gutter-naming, $gutter-map, $bp-name); } } }
+
+// gutters( margin | padding, unit: px | em | rem, !important: true | false,
+// main-gutter-direction: all | a x y t r b l, bp-gutter-direction: all | a x y t b r l,
+// gutter-naming: value | name : hyphen | null, gutter-map, breakpoint-map )
+@include gutters(  margin,  em,  false,  all,  x y, name hyphen,  $GUTTER-MAP,  $BP-MAP);
+@include gutters(  padding,  em,  true,  all,  x y, value,  $GUTTER-MAP,  $BP-MAP);
+
+
+
+
+
+
