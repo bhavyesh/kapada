@@ -1,0 +1,81 @@
+
+$root-font-size: 16;
+
+
+$base-viewport-name: z;
+$grid-classes: a b c d e f g h i j k l m n o p q r s t u v w x y z;
+$grid-viewport-start-point: 300; //px
+$grid-viewport-end-point: 1500; //px
+$grid-viewports-sections: 8; // number of viewport definitions
+$grid-viewport-gap-px: floor(($grid-viewport-end-point - $grid-viewport-start-point) / $grid-viewports-sections);
+$grid-viewport-gap-px: 150; // overwrite to the above value
+
+$grid-columns: 20; 
+$grid-equal-columns: 10;
+
+$grid-viewport-width-unit: 'em'; // value can be either 'px' or 'em'
+$grid-class-naming: 'value';  // value can be either 'index' or 'value'
+
+@if      $grid-viewport-width-unit == 'px' { $grid-viewport-width-unit: $root-font-size * 1px}
+@else if $grid-viewport-width-unit == 'em' { $grid-viewport-width-unit: 1em}
+
+$grid-viewport-map: ();
+@each $current-class in $grid-classes {
+  $i: index($grid-classes, $current-class);
+  $new: ($current-class: ($i * $grid-viewport-gap-px));
+  $grid-viewport-map: map-merge($grid-viewport-map, $new);
+}
+// ---------------------- Here You can give custom MAP for viewports
+//$grid-viewport-map: (a:160, b:320, c:480, d:640, e:800, f:960, g:1120, h:1280, i:1440, j:1600);
+
+@mixin generate-grid-columns($index, $class) {
+  @if $index == 0 { // give width: auto; instead of width: 0%;
+    .#{$class}-auto { width: auto; }
+  }
+  @else if percentage($index / $grid-columns) == 5% { // stop 5% from getting inserted in stylesheet
+    // ::::: Remove this to insert 5 % box
+  }
+  @else if $index == $grid-columns { // keeps class with 100% width with just the single character e.g. "a" ::::: remove this to name normally
+    .#{$class} { width: 100%; }
+  }
+  @else if $grid-columns % $index == 0 {  // when index is 0 ""$grid-columns % $index == 0"" will generate error as 0 is not a legal value for division
+    .#{$class}#{ if($grid-class-naming == 'index', $index, round(($index * 100) / $grid-columns)) },   .#{$class}-#{$grid-columns /$index} {
+      width: percentage($index / $grid-columns);
+    }
+  }
+  @else {
+    .#{$class}#{ if($grid-class-naming == 'index', $index, round(($index * 100) / $grid-columns)) } {
+      width: percentage($index / $grid-columns);
+    }
+  }
+}
+
+@mixin generate-grid-equal-columns($index, $class) {
+  @if $grid-columns % $index != 0 {
+    .#{$class}-#{$index} {
+      width: percentage(1 / $index);
+     }
+  }
+}
+
+@mixin generate-grids($viewport-name) {
+  @for $i from 0 through $grid-columns {
+    @include generate-grid-columns($i, $viewport-name);
+  }
+  @for $i from 1 through $grid-equal-columns {
+    @include generate-grid-equal-columns($i, $viewport-name);
+  }
+}
+
+@mixin grids() {
+  @include generate-grids($base-viewport-name); // base grid, where the viewport starts
+  @each $grid-viewport-name, $grid-viewport-width in $grid-viewport-map {
+    @if $grid-viewport-width >= $grid-viewport-start-point and $grid-viewport-width <= $grid-viewport-end-point {
+      @media (min-width: ($grid-viewport-width/ $root-font-size) * $grid-viewport-width-unit) {
+        @include generate-grids($grid-viewport-name);
+      }
+    }
+  }
+}
+
+@include grids();
