@@ -14,6 +14,8 @@
   @return $return-bp-map;
 }
 
+/* ================================================================================================ */
+
 $root-font-size: 16;
 
 $base-bp-name: z;
@@ -38,7 +40,7 @@ $gutter-unit: rem;
 $gutter-IMP: false;
 $gutter-map: (z:0, es:2, vs:4, s:8, m:16, l:24, vl:48, el:64 ); //px
 
-
+/* ====================================================================================================== */
 
 @mixin generate-grids($grid-columns, $grid-equals, $grid-naming, $bp-name) {
   
@@ -88,6 +90,8 @@ $gutter-map: (z:0, es:2, vs:4, s:8, m:16, l:24, vl:48, el:64 ); //px
 
 }
 
+/* ==================================================================================================== */
+
 @function gutter-classing ($g-naming, $g-name, $g-size) { @return if( index($g-naming, hyphen) != null, '-', '') + if( nth($g-naming,1) == name, $g-name, $g-size) }
 
 @mixin generate-gutters($gutter-type, $gutter-unit, $gutter-IMP, $direction, $gutter-naming, $gutter-map, $bp-name) {
@@ -113,6 +117,9 @@ $gutter-map: (z:0, es:2, vs:4, s:8, m:16, l:24, vl:48, el:64 ); //px
   }
   
 }
+
+/* =============================================================================================================== */
+
 
 @mixin generator {
   
