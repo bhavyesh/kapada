@@ -114,10 +114,6 @@ $legal-directions: ( a: all,  x: left right,  y: top bottom,  t: top,  r: right,
 
 /* =============================================================================================================== */
 
-
-/* =============================================================================================================== */
-
-
 $grid-columns: 20; // number of percent based grid columns
 $grid-equals: 8; // number of group equal sized columns
 $grid-naming: value; // grid-naming: value -> width percentae | index -> serial index from 1 to total grid columns
@@ -132,9 +128,9 @@ $float-map: (l: left, r: right, n: none);
 @mixin css-generator {
   
   @include generate-grids($grid-columns, $grid-equals, $grid-naming, $base-bp-name);
-  @include generate-style($name:padding, $alias:p, $unit:em, $is-imp:true, $aliasing:true, $hyphen:true, $map:$gutter-map, $bp-name:$base-bp-name, $directions:a);
-  @include generate-style($name:margin, $alias:m, $unit:em, $is-imp:true, $aliasing:true, $hyphen:true, $map:$gutter-map, $bp-name:$base-bp-name, $directions:x);
-  @include generate-style($name:display, $alias:d, $unit:false, $is-imp:true, $aliasing:true, $hyphen:true, $map:$display-map, $bp-name:$base-bp-name);
+  @include generate-style($name:padding, $alias:p, $unit:em, $is-imp:true, $aliasing:false, $hyphen:false, $map:$gutter-map, $bp-name:$base-bp-name, $directions:a);
+  @include generate-style($name:margin, $alias:m, $unit:em, $is-imp:true, $aliasing:false, $hyphen:false, $map:$gutter-map, $bp-name:$base-bp-name, $directions:x);
+  @include generate-style($name:display, $alias:d, $unit:false, $is-imp:true, $aliasing:true, $hyphen:false, $map:$display-map, $bp-name:$base-bp-name);
   @include generate-style($name:float, $alias:f, $unit:false, $is-imp:false, $aliasing:true, $hyphen:false, $map:$float-map, $bp-name:$base-bp-name);
   @include generate-style($name:font-size, $alias:fs, $unit:px, $is-imp:false, $aliasing:true, $hyphen:true, $map:$font-size-map, $bp-name:$base-bp-name);
   @include generate-style($name:text-align, $alias:ta, $unit:flase, $is-imp:false, $aliasing:true, $hyphen:true, $map:$text-align-map, $bp-name:$base-bp-name);
@@ -142,9 +138,9 @@ $float-map: (l: left, r: right, n: none);
   @each $bp-name, $bp-width in $bp-map {
     @media (min-width: $bp-width) {
       @include generate-grids($grid-columns, $grid-equals, $grid-naming, $bp-name);
-      @include generate-style($name:padding, $alias:p, $unit:em, $is-imp:true, $aliasing:true, $hyphen:true, $map:$gutter-map, $bp-name:$bp-name, $directions:a);
-      @include generate-style($name:margin, $alias:m, $unit:em, $is-imp:true, $aliasing:true, $hyphen:true, $map:$gutter-map, $bp-name:$bp-name, $directions:x);
-      @include generate-style($name:display, $alias:d, $unit:false, $is-imp:true, $aliasing:true, $hyphen:true, $map:$display-map, $bp-name:$bp-name);
+      @include generate-style($name:padding, $alias:p, $unit:em, $is-imp:true, $aliasing:false, $hyphen:false, $map:$gutter-map, $bp-name:$bp-name, $directions:a);
+      @include generate-style($name:margin, $alias:m, $unit:em, $is-imp:true, $aliasing:false, $hyphen:false, $map:$gutter-map, $bp-name:$bp-name, $directions:x);
+      @include generate-style($name:display, $alias:d, $unit:false, $is-imp:true, $aliasing:true, $hyphen:false, $map:$display-map, $bp-name:$bp-name);
       @include generate-style($name:float, $alias:f, $unit:false, $is-imp:false, $aliasing:true, $hyphen:false, $map:$float-map, $bp-name:$bp-name);
       @include generate-style($name:font-size, $alias:fs, $unit:px, $is-imp:false, $aliasing:true, $hyphen:true, $map:$font-size-map, $bp-name:$bp-name);
       @include generate-style($name:text-align, $alias:ta, $unit:flase, $is-imp:false, $aliasing:true, $hyphen:true, $map:$text-align-map, $bp-name:$bp-name);
