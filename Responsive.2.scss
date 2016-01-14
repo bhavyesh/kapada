@@ -19,13 +19,11 @@
 
 /* ================================================================================================ */
 
-$root-font-size: 16;
-
 $base-bp-name: z;
 $bp-names: a b c d e f g h i j k l m n o p q r s t u v w x y; //optional names es vs xs s m l xl vl el j xj vj ej;
 $bp-begin: 300; //px
-$bp-end: 1500; //px
-$bp-gap: 124; //px
+$bp-end: 1400; //px
+$bp-gap: 100; //px
 $bp-unit: em;
 $bp-map: bp-map($bp-names, $bp-begin, $bp-end, $bp-gap, $bp-unit);
 // Cutom Overwrite of $BP-MAP: (a:160, b:320, c:480, d:640, e:800, f:960, g:1120, h:1280, i:1440, j:1600) //px
@@ -118,8 +116,8 @@ $grid-columns: 20; // number of percent based grid columns
 $grid-equals: 8; // number of group equal sized columns
 $grid-naming: value; // grid-naming: value -> width percentae | index -> serial index from 1 to total grid columns
 
-$gutter-map: (z:0, es:2, vs:4, s:8, m:16, l:24, vl:48, el:64 ); //px
-$display-map: (b: block, n: none, i: inline, ib: inline-block);
+$gutter-map: (z:0, a:2, b:4, c:8, d:12, e:16, f:24, g:32, h:48, i:64 ); //px
+$display-map: (b: block, n: none, i: inline, ib: inline-block, t: table);
 $font-size-map: (m:16, l:18, x:20);
 $text-align-map: (c: center, l: left, r: right, j: justify);
 $float-map: (l: left, r: right, n: none);
@@ -128,21 +126,21 @@ $float-map: (l: left, r: right, n: none);
 @mixin css-generator {
   
   @include generate-grids($grid-columns, $grid-equals, $grid-naming, $base-bp-name);
-  @include generate-style($name:padding, $alias:p, $unit:em, $is-imp:false, $aliasing:false, $hyphen:false, $map:$gutter-map, $bp-name:$base-bp-name, $directions:all);
-  @include generate-style($name:margin, $alias:m, $unit:em, $is-imp:false, $aliasing:false, $hyphen:false, $map:$gutter-map, $bp-name:$base-bp-name, $directions:all);
+  @include generate-style($name:padding, $alias:p, $unit:rem, $is-imp:false, $aliasing:false, $hyphen:false, $map:$gutter-map, $bp-name:$base-bp-name, $directions:all);
+  @include generate-style($name:margin, $alias:m, $unit:rem, $is-imp:false, $aliasing:false, $hyphen:false, $map:$gutter-map, $bp-name:$base-bp-name, $directions:all);
   @include generate-style($name:display, $alias:d, $unit:false, $is-imp:true, $aliasing:true, $hyphen:false, $map:$display-map, $bp-name:$base-bp-name);
   @include generate-style($name:float, $alias:f, $unit:false, $is-imp:false, $aliasing:true, $hyphen:false, $map:$float-map, $bp-name:$base-bp-name);
-  @include generate-style($name:font-size, $alias:fs, $unit:px, $is-imp:false, $aliasing:true, $hyphen:true, $map:$font-size-map, $bp-name:$base-bp-name);
+  @include generate-style($name:font-size, $alias:fs, $unit:px, $is-imp:false, $aliasing:false, $hyphen:false, $map:$font-size-map, $bp-name:$base-bp-name);
   @include generate-style($name:text-align, $alias:ta, $unit:flase, $is-imp:false, $aliasing:true, $hyphen:true, $map:$text-align-map, $bp-name:$base-bp-name);
   
   @each $bp-name, $bp-width in $bp-map {
     @media (min-width: $bp-width) {
       @include generate-grids($grid-columns, $grid-equals, $grid-naming, $bp-name);
-      @include generate-style($name:padding, $alias:p, $unit:em, $is-imp:false, $aliasing:false, $hyphen:false, $map:$gutter-map, $bp-name:$bp-name, $directions:x y);
-      @include generate-style($name:margin, $alias:m, $unit:em, $is-imp:false, $aliasing:false, $hyphen:false, $map:$gutter-map, $bp-name:$bp-name, $directions:x y);
+      @include generate-style($name:padding, $alias:p, $unit:rem, $is-imp:false, $aliasing:false, $hyphen:false, $map:$gutter-map, $bp-name:$bp-name, $directions: x y);
+      @include generate-style($name:margin, $alias:m, $unit:rem, $is-imp:false, $aliasing:false, $hyphen:false, $map:$gutter-map, $bp-name:$bp-name, $directions: x y);
       @include generate-style($name:display, $alias:d, $unit:false, $is-imp:true, $aliasing:true, $hyphen:false, $map:$display-map, $bp-name:$bp-name);
       @include generate-style($name:float, $alias:f, $unit:false, $is-imp:false, $aliasing:true, $hyphen:false, $map:$float-map, $bp-name:$bp-name);
-      @include generate-style($name:font-size, $alias:fs, $unit:px, $is-imp:false, $aliasing:true, $hyphen:true, $map:$font-size-map, $bp-name:$bp-name);
+      @include generate-style($name:font-size, $alias:fs, $unit:px, $is-imp:false, $aliasing:false, $hyphen:false, $map:$font-size-map, $bp-name:$bp-name);
       @include generate-style($name:text-align, $alias:ta, $unit:flase, $is-imp:false, $aliasing:true, $hyphen:true, $map:$text-align-map, $bp-name:$bp-name);
     }
   }
