@@ -1,0 +1,157 @@
+$root-font-size: 10; //px
+$emrem: 1/$root-font-size;
+
+@function is-imp ($imp) {  @return if( $imp == true, unquote('!important'), unquote('')); }
+@function unit ($unit) {  @return if( $unit == em, $emrem * 1em,   if( $unit == rem, $emrem * 1rem,    if( $unit == px, 1px, unquote('') ))); }
+@function uniter ($value,$unit) { @return if( $unit == em, $value * $emrem * 1em,  if( $unit == rem, $value * $emrem * 1rem,  if( $unit == px, $value * 1px, unquote($value) ))); }
+
+@function bp-map ($bp-names, $bp-begin, $bp-end, $bp-gap, $unit) {
+  $return-bp-map: ();
+  @each $current-bp-name in $bp-names {
+    $i: index($bp-names, $current-bp-name);
+    $bp-width: $i * $bp-gap;
+    @if $bp-width >= $bp-begin and $bp-width <= $bp-end {
+      $new: ($current-bp-name: $bp-width * 0.0625em); // used 0.0625em instead of unit($unit) because root-font-size is 10px
+      $return-bp-map: map-merge($return-bp-map, $new);
+    }
+  }
+  @return $return-bp-map;
+}
+
+/* ================================================================================================ */
+
+$base-bp-name: z;
+$bp-names: a b c d e f g h i j k l m n o p q r s t u v w x y; //optional names es vs xs s m l xl vl el j xj vj ej;
+$bp-begin: 300; //px
+$bp-end: 1500; //px
+$bp-gap: 100; //px
+$bp-unit: em;
+$bp-map: bp-map($bp-names, $bp-begin, $bp-end, $bp-gap, $bp-unit);
+// Cutom Overwrite of $bp-map: (a:160, b:320, c:480, d:640, e:800, f:960, g:1120, h:1280, i:1440, j:1600) //px
+
+$legal-directions: ( a: all,  x: left right,  y: top bottom,  t: top,  r: right, b: bottom, l: left);
+
+$grid-columns: 20; // number of percent based grid columns
+$grid-equals: 8; // number of group equal sized columns
+$grid-naming: value; // grid-naming: value -> width percentae | index -> serial index from 1 to total grid columns
+
+$gutter-map: (0:0, 1:1, 2:2, 3:3, 4:4, 5:5, 6:6, 7:7, 8:8, 9:9, 10:10, 11:11, 12:12, 13:13, 14:14, 15:15, 16:16, 17:17, 18:18, 19:19, 20:20, 21:21, 22:22, 23:23, 24:24, 25:25, 26:26, 27:27, 28:28, 29:29, 30:30, 32:32, 34:34, 36:36, 40:40, 44:44, 48:48, 52:52, 56:56, 60:60, 64:64, 68:68, 72:72, 76:76 ); //px
+$display-map: (b: block, n: none, i: inline, ib: inline-block, t: table);
+$font-size-map-rem: (8r:8, 9r:9, 10r:10, 11r:11, 12r:12, 13r:13, 14r:14, 15r:15, 16r:16, 17r:17, 18r:18, 19r:19, 20r:20, 21r:21, 22r:22, 24r:24, 28r:28, 30r:30);
+$font-size-map-em: (5e:5, 6e:6, 7e:7, 8e:8, 9e:9, 10e:10, 11e:11, 12e:12, 13e:13, 14e:14, 15e:15, 16e:16, 17e:17, 18e:18, 19e:19, 20e:20, 21e:21, 22e:22, 23e:23, 24e:24, 25e:25, 26e:26 , 28e:28, 30e:30, 32e:32);
+$text-align-map: (c: center, l: left, r: right, j: justify);
+$float-map: (l: left, r: right, n: none);
+$position-map: (a:absolute, f:fixed, r:relative, s:static);
+
+
+/* ====================================================================================================== */
+
+@mixin generate-grids($grid-columns, $grid-equals, $grid-naming, $bp-name) {
+  
+  @for $index from 0 through $grid-columns {
+    
+    @if $index == 0 {
+      .#{$bp-name}-auto {
+        width: auto;
+      }
+    }
+  
+    // stop 5% from getting inserted in stylesheet ::::: Remove this to insert 5 % box
+    @else if percentage($index / $grid-columns) == 5% { }
+  
+    // keeps class with 100% width with just the single character e.g. "a" ::::: remove this to name normally
+    @else if $index == $grid-columns {
+      .#{$bp-name}#{if($grid-naming == 'index', $index, round(($index * 100) / $grid-columns))} ,
+      .#{$bp-name} { 
+        width: 100%;
+      }
+    }
+  
+    // when index is 0 ""$grid-columns % $index == 0"" will generate error as 0 is not a legal value for division
+    @else if $grid-columns % $index == 0 {
+      .#{$bp-name}#{ if($grid-naming == 'index', $index, round(($index * 100) / $grid-columns))} ,
+      .#{$bp-name}-#{$grid-columns /$index} {
+        width: percentage($index / $grid-columns);
+      }
+    }
+
+    // rest all here
+    @else {
+      .#{$bp-name}#{if($grid-naming == 'index', $index, round(($index * 100) / $grid-columns)) } { 
+        width: percentage($index / $grid-columns);
+      }
+    }
+
+  }
+
+  @for $j from 1 through $grid-equals {
+    @if $grid-columns % $j != 0 {
+      .#{$bp-name}-#{$j} {
+        width: percentage(1 / $j);
+      }
+    }
+  }
+
+}
+
+/* ==================================================================================================== */
+
+@mixin generate-style($name, $alias, $unit, $is-imp, $aliasing, $hyphen, $map, $bp-name, $directions:null){
+  
+  @if $bp-name == $base-bp-name { $bp-name: unquote('');} @else { $bp-name: $bp-name + '-' }
+  
+  @each $value-alias, $value in $map {
+    
+    @if ($name == margin) or ($name == padding) {
+      @each $ld, $d in $legal-directions {
+        @if (index($directions, $ld) != null) or ($directions == all) {
+          .#{$bp-name}#{$alias}#{$ld}#{if($hyphen,'-','')}#{if($aliasing, $value-alias, $value)} {
+            @each $current-d in $d {
+              #{$name}#{if($current-d == all, '', '-' + $current-d)}:
+                $value * unit($unit) is-imp($is-imp)
+            }
+          }
+        }
+      }
+    }
+    
+    @else {
+      .#{$bp-name}#{$alias}#{if($hyphen,'-','')}#{ if($aliasing, $value-alias, $value) } {
+        #{$name}: uniter($value,$unit) is-imp($is-imp);
+      }
+    }
+    
+  }
+}
+
+/* =============================================================================================================== */
+
+@mixin css-generator {
+  
+  @include generate-grids($grid-columns, $grid-equals, $grid-naming, $base-bp-name);
+  @include generate-style($name:padding, $alias:p, $unit:rem, $is-imp:false, $aliasing:false, $hyphen:false, $map:$gutter-map, $bp-name:$base-bp-name, $directions:all);
+  @include generate-style($name:margin, $alias:m, $unit:rem, $is-imp:false, $aliasing:false, $hyphen:false, $map:$gutter-map, $bp-name:$base-bp-name, $directions:all);
+  @include generate-style($name:display, $alias:d, $unit:false, $is-imp:false, $aliasing:true, $hyphen:false, $map:$display-map, $bp-name:$base-bp-name);
+  @include generate-style($name:float, $alias:f, $unit:false, $is-imp:false, $aliasing:true, $hyphen:false, $map:$float-map, $bp-name:$base-bp-name);
+  @include generate-style($name:font-size, $alias:fs, $unit:rem, $is-imp:false, $aliasing:true, $hyphen:false, $map:$font-size-map-rem, $bp-name:$base-bp-name);
+  @include generate-style($name:font-size, $alias:fs, $unit:em, $is-imp:false, $aliasing:true, $hyphen:false, $map:$font-size-map-em, $bp-name:$base-bp-name);
+  @include generate-style($name:text-align, $alias:ta, $unit:flase, $is-imp:false, $aliasing:true, $hyphen:false, $map:$text-align-map, $bp-name:$base-bp-name);
+  @include generate-style($name:position, $alias:p, $unit:flase, $is-imp:false, $aliasing:true, $hyphen:false, $map:$position-map, $bp-name:$base-bp-name);
+  
+  @each $bp-name, $bp-width in $bp-map {
+    @media (min-width: $bp-width) {
+      @include generate-grids($grid-columns, $grid-equals, $grid-naming, $bp-name);
+      @include generate-style($name:padding, $alias:p, $unit:rem, $is-imp:false, $aliasing:false, $hyphen:false, $map:$gutter-map, $bp-name:$bp-name, $directions:all);
+      @include generate-style($name:margin, $alias:m, $unit:rem, $is-imp:false, $aliasing:false, $hyphen:false, $map:$gutter-map, $bp-name:$bp-name, $directions:all);
+      @include generate-style($name:display, $alias:d, $unit:false, $is-imp:false, $aliasing:true, $hyphen:false, $map:$display-map, $bp-name:$bp-name);
+      @include generate-style($name:float, $alias:f, $unit:false, $is-imp:false, $aliasing:true, $hyphen:false, $map:$float-map, $bp-name:$bp-name);
+      @include generate-style($name:font-size, $alias:fs, $unit:rem, $is-imp:false, $aliasing:true, $hyphen:false, $map:$font-size-map-rem, $bp-name:$bp-name);
+      @include generate-style($name:font-size, $alias:fs, $unit:em, $is-imp:false, $aliasing:true, $hyphen:false, $map:$font-size-map-em, $bp-name:$bp-name);
+      @include generate-style($name:text-align, $alias:ta, $unit:flase, $is-imp:false, $aliasing:true, $hyphen:false, $map:$text-align-map, $bp-name:$bp-name);
+      @include generate-style($name:position, $alias:p, $unit:flase, $is-imp:false, $aliasing:true, $hyphen:false, $map:$position-map, $bp-name:$bp-name);
+    }
+  }
+  
+}
+
+@include css-generator;
